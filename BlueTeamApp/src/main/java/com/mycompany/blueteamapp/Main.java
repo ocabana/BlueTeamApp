@@ -16,6 +16,7 @@ import org.pcap4j.core.PcapNetworkInterface.PromiscuousMode;
 import org.pcap4j.packet.EthernetPacket;
 import org.pcap4j.packet.IpPacket;
 import org.pcap4j.packet.IpV4Packet;
+import org.pcap4j.packet.IpV4Packet.Builder;
 import org.pcap4j.packet.Packet;
 import org.pcap4j.packet.TcpPacket;
 import org.pcap4j.packet.UdpPacket;
@@ -42,7 +43,7 @@ public class Main {
         packetInfo.dst_ip = ipp.getHeader().getDstAddr();
         packetInfo.ttl = ipp.getHeader().getTtlAsInt();
         
-        packetInfo.protocol = ipp.getHeader().getProtocol().valueAsString();
+        packetInfo.protocol = ipp.getHeader().getProtocol();
         
         if(packetInfo.protocol.equals("TCP")){
             TcpPacket tp = ipp.get(TcpPacket.class);
@@ -63,5 +64,17 @@ public class Main {
         }
         
         return packetInfo;
+    }
+    static Packet returnPacket(PacketStruct ps){
+        //Creates a Packet to return to the sender
+        Packet p;
+        Builder b = new Builder();
+        b.protocol(ps.protocol);
+        b.dstAddr(ps.src_ip);
+        b.srcAddr(ps.dst_ip);
+        b.getPayloadBuilder().build();
+        IpV4Packet ip = b.build();
+        
+        return ip;
     }
 }
