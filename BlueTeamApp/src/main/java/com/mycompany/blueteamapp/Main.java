@@ -6,23 +6,15 @@
 package com.mycompany.blueteamapp;
 
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import org.pcap4j.core.NotOpenException;
-import org.pcap4j.core.PcapHandle;
 import org.pcap4j.core.PcapNativeException;
-import org.pcap4j.core.PcapNetworkInterface;
-import org.pcap4j.core.PcapNetworkInterface.PromiscuousMode;
-import org.pcap4j.packet.EthernetPacket;
 import org.pcap4j.packet.IcmpV4CommonPacket;
-import org.pcap4j.packet.IpPacket;
 import org.pcap4j.packet.IpV4Packet;
 import org.pcap4j.packet.IpV4Packet.Builder;
 import org.pcap4j.packet.Packet;
 import org.pcap4j.packet.TcpPacket;
 import org.pcap4j.packet.UdpPacket;
 import org.pcap4j.packet.namednumber.IcmpV4Type;
-import org.pcap4j.util.NifSelector;
 
 /**
  *
