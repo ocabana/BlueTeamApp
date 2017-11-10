@@ -34,47 +34,45 @@ public class Main {
         packetInfo.src_ip = ipp.getHeader().getSrcAddr();
         packetInfo.dst_ip = ipp.getHeader().getDstAddr();
         packetInfo.ttl = ipp.getHeader().getTtlAsInt();
-        packetInfo.checksum = ipp.getHeader().getHeaderChecksum();
-        packetInfo.id = ipp.getHeader().getIdentificationAsInt();
         
         packetInfo.protocol = ipp.getHeader().getProtocol();
         packetInfo.options = ipp.getHeader().getOptions();
-        packetInfo.tos = ipp.getHeader().getTos();
-        packetInfo.version = ipp.getHeader().getVersion();
+        packetInfo.tos = ipp.getHeader().getTos().toString();
+        packetInfo.version = ipp.getHeader().getVersion().valueAsString();
         packetInfo.ihl = ipp.getHeader().getIhlAsInt();
         
-        packetInfo.ipflags = new boolean[4];
-        packetInfo.ipflags[0] = ipp.getHeader().getDontFragmentFlag();
-        packetInfo.ipflags[1] = ipp.getHeader().getMoreFragmentFlag();
-        packetInfo.ipflags[2] = ipp.getHeader().getReservedFlag();
-        packetInfo.ipflags[3] = ipp.getHeader().hasValidChecksum(true);
+        packetInfo.ip_flags = new boolean[4];
+        packetInfo.ip_flags[0] = ipp.getHeader().getDontFragmentFlag();
+        packetInfo.ip_flags[1] = ipp.getHeader().getMoreFragmentFlag();
+        packetInfo.ip_flags[2] = ipp.getHeader().getReservedFlag();
+        packetInfo.ip_flags[3] = ipp.getHeader().hasValidChecksum(true);
         
-        if(packetInfo.protocol.equals("TCP")){
+        if(packetInfo.protocol.equals("1")){
             TcpPacket tp = ipp.get(TcpPacket.class);
             packetInfo.window = tp.getHeader().getWindowAsInt();
             
             packetInfo.src_port = tp.getHeader().getSrcPort().valueAsInt();
             packetInfo.dst_port = tp.getHeader().getDstPort().valueAsInt();
             
-            packetInfo.tcpFlags = new boolean[6];
-            packetInfo.tcpFlags[0] = tp.getHeader().getAck();
-            packetInfo.tcpFlags[1] = tp.getHeader().getFin();
-            packetInfo.tcpFlags[2] = tp.getHeader().getPsh();
-            packetInfo.tcpFlags[3] = tp.getHeader().getRst();
-            packetInfo.tcpFlags[4] = tp.getHeader().getSyn();
-            packetInfo.tcpFlags[5] = tp.getHeader().getUrg();
+            packetInfo.tcp_flags = new boolean[6];
+            packetInfo.tcp_flags[0] = tp.getHeader().getAck();
+            packetInfo.tcp_flags[1] = tp.getHeader().getFin();
+            packetInfo.tcp_flags[2] = tp.getHeader().getPsh();
+            packetInfo.tcp_flags[3] = tp.getHeader().getRst();
+            packetInfo.tcp_flags[4] = tp.getHeader().getSyn();
+            packetInfo.tcp_flags[5] = tp.getHeader().getUrg();
             
             packetInfo.offset = tp.getHeader().getDataOffsetAsInt();
             packetInfo.acknowledgement = tp.getHeader().getAcknowledgmentNumber();
             packetInfo.sequence = tp.getHeader().getSequenceNumber();
                        
-        }else if(packetInfo.protocol.equals("UDP")){
+        }else if(packetInfo.protocol.equals("17")){
             UdpPacket up = ipp.get(UdpPacket.class);
-            
+            packetInfo.payload = up.getPayload().getRawData().toString();
             packetInfo.src_port = up.getHeader().getSrcPort().valueAsInt();
             packetInfo.dst_port = up.getHeader().getDstPort().valueAsInt();
             
-        }else if(packetInfo.protocol.equals("ICMP")){
+        }else if(packetInfo.protocol.equals("4")){
             IcmpV4CommonPacket ic = ipp.get(IcmpV4CommonPacket.class);
             packetInfo.code = ic.getHeader().getCode().valueAsString();
             packetInfo.type = ic.getHeader().getType().valueAsString();
@@ -100,5 +98,32 @@ public class Main {
         IpV4Packet ip = b.build();
         
         return ip;
+    }
+    
+    /*
+    TCP, x, localhost, /system/bin/sh\x00\x00 /* Alerts: Shell Generation Attempt */
+    //TCP, x, localhost, /^([[:space:]]*)\{([[:space:]]*)(.*)\"method\"([[:space:]]*):([[:space:]]*)\"(.*)\"/ /* Alerts: BCM. RPC request TCP */
+    //TCP, x, localhost, /^([[:space:]]*)\{([[:space:]]*)(.*)\"method\"([[:space:]]*):([[:space:]]*)\"(.*)\"/ /* Alerts: BCM. RPC Request TCP Reverse*/
+    //TCP, x, localhost, /^([[:space:]]*)\{([[:space:]]*)(.*)\"method\"([[:space:]]*):([[:space:]]*)\"(.*)\"/ /* Alerts: BCM. RPC Request HTTP */
+    //TCP, localhost, x, /^([[:space:]]*)\{([[:space:]]*)\"(jsonrpc|result|error|id)\"([[:space:]]*):/ /*Alerts: BCM. RPC Response TCP*/
+    //TCP, localhost, x, /^([[:space:]]*)\{([[:space:]]*)\"(jsonrpc|result|error|id)\"([[:space:]]*):/ /*Alerts: BCM. RPC Response TCP Reverse*/
+    //TCP, localhost, x, /^([[:space:]]*)\{([[:space:]]*)\"(jsonrpc|result|error|id)\"([[:space:]]*):/ /*Alerts: BCM. RPC Response HTTP */
+    /* Options: 
+    * protocol = tcp|udp|icmp|icmp6|ip|ip6
+    * srcip = IP address
+    * dstip = IP address
+    * payload = String (regex?)
+    */
+    
+    static boolean compareSignature(String[] signature, PacketStruct p){
+        String[] features = p.returnFeatures();
+        if(features.length != signature.length){
+            System.out.println("Problem with the signature format.");
+            return false;
+        }
+        for(int i = 0; i < signature.length; i++){
+             
+        }
+        return true;
     }
 }
