@@ -122,7 +122,17 @@ public class Main {
             return false;
         }
         for(int i = 0; i < signature.length; i++){
-             
+            if(signature[i].equals(""))
+                continue;
+            if(features[i].equals(""))
+                return false;
+            if(features[i].equals(signature[i]))
+                continue;
+            if(features[i].contains(signature[i]))
+                continue;
+            if(features[i].matches(signature[i]))
+                continue;
+            return false;
         }
         return true;
     }
