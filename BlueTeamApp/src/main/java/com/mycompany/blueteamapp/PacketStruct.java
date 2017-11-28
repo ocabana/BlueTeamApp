@@ -6,6 +6,7 @@
 package com.mycompany.blueteamapp;
 
 import java.net.Inet4Address;
+import java.sql.Timestamp;
 import java.util.List;
 import org.pcap4j.packet.IpV4Packet.IpV4Option;
 import org.pcap4j.packet.IpV4Packet.IpV4Tos;
@@ -23,8 +24,17 @@ public class PacketStruct {
     public boolean[] ip_flags = null;
     public boolean[] tcp_flags = null;
     public List<IpV4Option> options = null;
+    public Timestamp time = null;
     public String tos = "", version = "", code = "", type = "", payload = "";
     public String[] returnFeatures(){
+        String trans_protocol = (protocol == null)? "" : protocol.valueAsString();
+        if(trans_protocol.equals("1"))
+            trans_protocol = "TCP";
+        else if(trans_protocol.equals("17"))
+            trans_protocol = "UDP";
+        else
+            trans_protocol = "ICMP";
+        
         String[] features = new String[20];
         features[0] = (src_ip == null)? "" : src_ip.getHostAddress();
         features[1] = (dst_ip == null)? "" : dst_ip.getHostAddress();
@@ -37,7 +47,7 @@ public class PacketStruct {
         features[8] = (offset == -1)? "" : offset + "";
         features[9] = (sequence == -1)? "" : sequence + "";
         features[10] = (acknowledgement == -1)? "" : acknowledgement + "";
-        features[11] = (protocol == null)? "" : protocol.valueAsString();
+        features[11] = trans_protocol;
         features[12] = (ip_flags == null)? "" : ip_flags.toString();
         features[13] = (tcp_flags == null)? "" : tcp_flags.toString();
         features[14] = (options == null)? "" : options.toString();
