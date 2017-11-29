@@ -6,6 +6,7 @@
 package com.mycompany.blueteamapp;
 
 import java.io.EOFException;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -39,24 +40,24 @@ import org.pcap4j.packet.namednumber.IcmpV4Type;
 
 
 public class Main {
-    static HashSet<String[]> signatures;
+    static HashSet<String[]> signatures = new HashSet();
     static HashMap<InetAddress, TCPSession> sessions = new HashMap();
     static Timestamp bottomTime = new Timestamp(0);
     static float rateThreshold = 1;
     static int repeatThreshold = 10;
     static long timeThreshold = 120000;
     
-    public static void Main(String[] args) throws PcapNativeException, NotOpenException, IOException, TimeoutException, InterruptedException {
+    public static void main(String[] args) throws PcapNativeException, NotOpenException, IOException, TimeoutException, InterruptedException {
         //PcapNetworkInterface inter = new NifSelector().selectNetworkInterface();
         PcapHandle nextPackets;       
         //Packet p;
         long time = System.currentTimeMillis();
         //The path to the .pcap file containing the packets
-        String path = "";
-        nextPackets = Pcaps.openOffline(path);
+        File path = new File("pcapsample_00001_20171128102447");
+        nextPackets = Pcaps.openOffline(path.listFiles()[0].getPath());
         
         //nextPackets = Pcaps.openOffline("", PcapHandle.TimestampPrecision.MICRO);
-        
+        generateSignature();
         while(1 == 1){
             //
             try{
@@ -66,7 +67,8 @@ public class Main {
                 while(it.hasNext())
                     compareSignature(it.next(), ps);
 
-                AddSession(ps.src_ip, ps.tcp_flags, ps.time); 
+                if(ps.protocol.valueAsString().equals("1"))
+                    AddSession(ps.src_ip, ps.tcp_flags, ps.time); 
                 if(System.currentTimeMillis() - time > 60000){
                     clearOldSessions();
                     time = System.currentTimeMillis();
@@ -74,6 +76,8 @@ public class Main {
             }catch(EOFException eof){
                 System.out.println("No new packets");
                 Thread.sleep(10000);
+            }catch(Exception ex){
+                System.out.println("Wrong packet format");
             }
         }
     }
@@ -304,14 +308,14 @@ public class Main {
         JOptionPane.showMessageDialog(null, alertMessage, "Security Warning", JOptionPane.WARNING_MESSAGE);
     }
     static void clearOldSessions(){
-        System.out.println(sessions.size());
+        //System.out.println(sessions.size());
         Iterator<Map.Entry<InetAddress, TCPSession>> it = sessions.entrySet().iterator();
         while(it.hasNext()){
             Map.Entry<InetAddress, TCPSession> e = it.next();
             if(System.currentTimeMillis() - e.getValue().lastpacket.getTime() > timeThreshold)
                 it.remove();
         }
-        System.out.println(sessions.size());
+        //System.out.println(sessions.size());
         it = sessions.entrySet().iterator();
         long time = 0;
         while(it.hasNext()){
